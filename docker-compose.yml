@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt:latest
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+    network_mode: host
+    # ports:
+    #   - "8080:8080" # Zigbee2MQTT frontend UI
+    environment:
+      - TZ=Europe/Vilnius
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0
+
+  mqtt:
+    container_name: mqtt
+    image: eclipse-mosquitto:latest
+    restart: always
+    network_mode: host
+    # ports:
+    #   - "1883:1883" # MQTT broker
+    #   - "9001:9001" # MQTT WebSockets
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  homeassistant:
+    container_name: hass
+    image: homeassistant/home-assistant:latest
+    restart: always
+    privileged: true
+    network_mode: host
+    # ports:
+    #   - "8123:8123" # Home Assistant Web UI
+    volumes:
+      - ./homeassistant:/config
+      - /etc/localtime:/etc/localtime:ro
